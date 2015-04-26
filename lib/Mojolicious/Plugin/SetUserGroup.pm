@@ -20,6 +20,7 @@ sub register {
 
 sub _error {
 	my ($app, $error) = @_;
+	chomp $error;
 	$app->log->error($error);
 	Mojo::IOLoop->stop;
 }
@@ -43,11 +44,11 @@ sub _setusergroup {
 	}
 	
 	setgid($gid);
-	_error($app, qq{Can't switch to group "$group": $!}) if $!;
+	return _error($app, qq{Can't switch to group "$group": $!}) if $!;
 	setgroups(@gids);
-	_error($app, qq{Can't set supplemental GIDs "@gids": $!}) if $!;
+	return _error($app, qq{Can't set supplemental GIDs "@gids": $!}) if $!;
 	setuid($uid);
-	_error($app, qq{Can't switch to user "$user": $!}) if $!;
+	return _error($app, qq{Can't switch to user "$user": $!}) if $!;
 	
 	return 1;
 }
