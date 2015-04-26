@@ -103,6 +103,9 @@ L<Mojolicious::Plugin> and implements the following new ones.
   $plugin->register(Mojolicious->new, {user => $user, group => $group});
 
 Install callback to change process privileges on the next L<Mojo::IOLoop> tick.
+If option C<user> is undefined, no privilege change will occur. If option
+C<group> is undefined but C<user> is defined, the group will be set to a group
+matching the user name.
 
 =head1 AUTHOR
 
