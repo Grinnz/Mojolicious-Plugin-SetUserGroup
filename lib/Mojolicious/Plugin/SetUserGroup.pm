@@ -57,7 +57,7 @@ sub _setusergroup {
 
 =head1 NAME
 
-Mojolicious::Plugin::SetUserGroup - A Mojolicious plugin to set unprivileged
+Mojolicious::Plugin::SetUserGroup - Mojolicious plugin to set unprivileged
 credentials
 
 =head1 SYNOPSIS
