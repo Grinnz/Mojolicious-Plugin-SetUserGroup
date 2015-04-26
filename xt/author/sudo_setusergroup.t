@@ -2,8 +2,10 @@ use strict;
 use warnings;
 use Test::More;
 use Mojo::IOLoop;
-use Mojo::JSON 'encode_json', 'decode_json';
+use Mojo::IOLoop::Server;
+use Mojo::JSON 'j';
 use Mojo::Server::Daemon;
+use Mojo::UserAgent;
 use POSIX qw(geteuid getgid);
 use Unix::Groups 'getgroups';
 
@@ -12,15 +14,16 @@ if ((my $uid = geteuid()) != 0) {
 	my $user = getpwuid $uid;
 	my $gid = getgrnam $user;
 	my $groups = [getgroups()];
-	$ENV{TEST_ORIGINAL_USER} = encode_json {user => $user, uid => $uid, gid => $gid, groups => $groups};
+	$ENV{TEST_ORIGINAL_USER} = j {user => $user, uid => $uid, gid => $gid, groups => $groups};
 	exec 'sudo', '-nE', $^X, '-I', $INC[0], $0, @ARGV;
 }
 
-my $original = decode_json($ENV{TEST_ORIGINAL_USER} || '{}');
+my $original = j($ENV{TEST_ORIGINAL_USER} || '{}');
 plan skip_all => "user is missing in TEST_ORIGINAL_USER=$ENV{TEST_ORIGINAL_USER}"
 	unless my $user = delete $original->{user};
 
-my $daemon = Mojo::Server::Daemon->new(listen => ['http://127.0.0.1'], silent => 1);
+my $port = Mojo::IOLoop::Server->generate_port;
+my $daemon = Mojo::Server::Daemon->new(listen => ["http://127.0.0.1:$port"], silent => 1);
 $daemon->app->plugin(SetUserGroup => {user => $user, group => $user});
 $daemon->start;
 $daemon->app->routes->children([]);
@@ -31,20 +34,24 @@ $daemon->app->routes->get('/' => sub {
 		groups => [getgroups()],
 	});
 });
-my $port = Mojo::IOLoop->acceptor($daemon->acceptors->[0])->port;
-my $buffer = '';
-Mojo::IOLoop->client({port => $port}, sub {
-	my ($loop, $err, $stream) = @_;
-	$stream->on(read => sub { $buffer .= $_[1]; Mojo::IOLoop->stop if $buffer =~ m/\}/ });
-	$stream->write("GET / HTTP/1.1\x0d\x0a\x0d\x0a");
+my $ua = Mojo::UserAgent->new;
+my $response;
+Mojo::IOLoop->timer(0.2 => sub {
+	$ua->get("http://127.0.0.1:$port/", sub {
+		my ($ua, $tx) = @_;
+		$response = $tx->res->body;
+		Mojo::IOLoop->stop;
+	});
 });
 
+my $failed;
+Mojo::IOLoop->timer(0.5 => sub { $failed = 1; Mojo::IOLoop->stop });
 Mojo::IOLoop->start;
-$buffer =~ s!.*\x0d\x0a!!s;
-my $response = decode_json($buffer);
+ok !$failed, 'Loop stopped successfully';
 my $orig_groups = delete $original->{groups};
-my $new_groups = delete $response->{groups};
-is_deeply($response, $original, 'UID and GID match') or diag $buffer;
+my $r_json = j($response);
+my $new_groups = delete $r_json->{groups};
+is_deeply($r_json, $original, 'UID and GID match') or diag $response;
 
 my %check_groups = map { ($_ => 1) } @$new_groups;
 my $is_in_groups = 1;
@@ -55,7 +62,7 @@ ok $is_in_groups, "User is in all original secondary groups";
 %check_groups = map { ($_ => 1) } @$orig_groups;
 $is_in_groups = 1;
 foreach my $gid (@$new_groups) {
-	$is_in_groups = 0 unless $gid == $response->{gid} or exists $check_groups{$gid};
+	$is_in_groups = 0 unless $gid == $r_json->{gid} or exists $check_groups{$gid};
 }
 ok $is_in_groups, "All secondary groups are assigned to user";
 
