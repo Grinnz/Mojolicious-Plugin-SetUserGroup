@@ -71,9 +71,9 @@ credentials
 
 This plugin is intended to replace the C<setuidgid> functionality of
 L<Mojo::Server>. It should be loaded in application startup and it will change
-privileges when L<Mojo::IOLoop> is started, in each worker process of a
-L<Mojo::Server::Prefork> daemon like L<hypnotoad>, or when the application is
-started otherwise.
+the user and group credentials of the process when L<Mojo::IOLoop> is started,
+which occurs in each worker process of a L<Mojo::Server::Prefork> daemon like
+L<hypnotoad>.
 
 This allows an application to be started as root so it can bind to privileged
 ports such as port 80 or 443, but run worker processes as unprivileged users.
@@ -93,6 +93,9 @@ in that mode:
   $self->plugin(SetUserGroup => {user => $user, group => $group}
     if $self->mode eq 'production';
 
+This module requires L<Unix::Groups> and thus will only work on Unix-like
+systems like Linux, OS X and BSD.
+
 =head1 METHODS
 
 L<Mojolicious::Plugin::SetUserGroup> inherits all methods from
@@ -105,7 +108,8 @@ L<Mojolicious::Plugin> and implements the following new ones.
 Install callback to change process privileges on the next L<Mojo::IOLoop> tick.
 If option C<user> is undefined, no privilege change will occur. If option
 C<group> is undefined but C<user> is defined, the group will be set to a group
-matching the user name.
+matching the user name. If privilege changes fail, an error will be logged and
+the process will be stopped.
 
 =head1 AUTHOR
 
@@ -120,4 +124,4 @@ the terms of the Artistic License version 2.0.
 
 =head1 SEE ALSO
 
-L<Mojolicious>, L<Mojo::Server>
+L<Mojolicious>, L<POSIX>, L<Unix::Groups>
