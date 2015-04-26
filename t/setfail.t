@@ -7,7 +7,7 @@ use Mojo::Server::Daemon;
 use POSIX 'geteuid';
 
 open my $log_handle, '>', \my $log_buffer;
-open STDERR, '>/dev/null';
+open my $null, '>', '/dev/null';
 
 my $i = 0;
 my $invalid = 'invalid';
@@ -33,7 +33,10 @@ sub try_server {
 	$daemon->start;
 	my $failed = 1;
 	Mojo::IOLoop->timer(0.5 => sub { $failed = 0; Mojo::IOLoop->stop });
-	Mojo::IOLoop->start;
+	{
+		local *STDERR = $null;
+		Mojo::IOLoop->start;
+	}
 	ok $failed, 'Server has failed to start';
 	like $log_buffer, $re, 'right error' if $re;
 }
