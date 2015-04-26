@@ -7,10 +7,19 @@ credentials
 
 =head1 SYNOPSIS
 
-  sub startup {
-    my $self = shift;
-    $self->plugin(SetUserGroup => {user => $user, group => $group});
-  }
+  # Mojolicious
+  $self->plugin(SetUserGroup => {user => $user, group => $group});
+  
+  # Mojolicious::Lite
+  plugin SetUserGroup => {user => $user, group => $group};
+  
+  # Production mode only
+  plugin SetUserGroup => {user => $user, group => $group}
+    if $self->mode eq 'production';
+  
+  # Root only
+  plugin SetUserGroup => {user => $user, group => $group}
+    if $> == 0;
 
 =head1 DESCRIPTION
 
@@ -25,18 +34,6 @@ ports such as port 80 or 443, but run worker processes as unprivileged users.
 However, if the application is not started as root, it will most likely fail to
 change privileges. So, you should only set the user/group when the application
 is started as root.
-
-To change privileges only when running under L<hypnotoad>, you can store the
-user and group in hypnotoad configuration:
-
-  $self->plugin(SetUserGroup => {user => $self->config->{hypnotoad}{user},
-    group => $self->config->{hypnotoad}{group});
-
-To change privileges only in production mode, conditionally register the plugin
-in that mode:
-
-  $self->plugin(SetUserGroup => {user => $user, group => $group}
-    if $self->mode eq 'production';
 
 This module requires L<Unix::Groups> and thus will only work on Unix-like
 systems like Linux, OS X and BSD.
