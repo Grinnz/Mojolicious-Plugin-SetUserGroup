@@ -4,11 +4,11 @@ use Test::More;
 use Mojo::IOLoop;
 use Mojo::JSON 'encode_json', 'decode_json';
 use Mojo::Server::Daemon;
-use POSIX qw(getuid getgid);
+use POSIX qw(geteuid getgid);
 use Unix::Groups 'getgroups';
 
 plan skip_all => 'TEST_RUN_SUDO=1' unless $ENV{TEST_RUN_SUDO};
-if ((my $uid = getuid()) != 0) {
+if ((my $uid = geteuid()) != 0) {
 	my $user = getpwuid $uid;
 	my $gid = getgrnam $user;
 	my $groups = [getgroups()];
@@ -26,7 +26,7 @@ $daemon->start;
 $daemon->app->routes->children([]);
 $daemon->app->routes->get('/' => sub {
 	shift->render(json => {
-		uid => getuid(),
+		uid => geteuid(),
 		gid => getgid(),
 		groups => [getgroups()],
 	});
