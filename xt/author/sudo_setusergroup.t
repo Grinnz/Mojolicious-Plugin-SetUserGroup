@@ -4,10 +4,13 @@ use Test::More;
 use Mojo::IOLoop;
 use Mojo::JSON 'encode_json', 'decode_json';
 use Mojo::Server::Daemon;
+use POSIX qw(getuid getgid);
+use Unix::Groups 'getgroups';
 
 plan skip_all => 'TEST_RUN_SUDO=1' unless $ENV{TEST_RUN_SUDO};
 if ($> != 0) {
-	$ENV{TEST_ORIGINAL_USER} = encode_json {user => $ENV{USER}, uid => POSIX::getuid(), gid => POSIX::getgid(), groups => $)};
+	my $gid = getgrnam $ENV{USER};
+	$ENV{TEST_ORIGINAL_USER} = encode_json {user => $ENV{USER}, uid => getuid(), gid => $gid, groups => [getgroups()]};
 	exec 'sudo', '-nE', $^X, '-I', $INC[0], $0, @ARGV;
 }
 
@@ -21,9 +24,9 @@ $daemon->start;
 $daemon->app->routes->children([]);
 $daemon->app->routes->get('/' => sub {
 	shift->render(json => {
-		uid => POSIX::getuid(),
-		gid => ( split ' ', $) )[0],
-		groups => $),
+		uid => getuid(),
+		gid => getgid(),
+		groups => [getgroups()],
 	});
 });
 my $port = Mojo::IOLoop->acceptor($daemon->acceptors->[0])->port;
@@ -37,21 +40,19 @@ Mojo::IOLoop->client({port => $port}, sub {
 Mojo::IOLoop->start;
 $buffer =~ s!.*\x0d\x0a!!s;
 my $response = decode_json($buffer);
-my @orig_groups = split ' ', delete $original->{groups};
-shift @orig_groups;
-my @new_groups = split ' ', delete $response->{groups};
-shift @new_groups;
+my $orig_groups = delete $original->{groups};
+my $new_groups = delete $response->{groups};
 is_deeply($response, $original, 'UID and GID match') or diag $buffer;
 
-my %check_groups = map { ($_ => 1) } @new_groups;
+my %check_groups = map { ($_ => 1) } @$new_groups;
 my $is_in_groups = 1;
-foreach my $gid (@orig_groups) {
+foreach my $gid (@$orig_groups) {
 	$is_in_groups = 0 unless exists $check_groups{$gid};
 }
 ok $is_in_groups, "User is in all original secondary groups";
-%check_groups = map { ($_ => 1) } @orig_groups;
+%check_groups = map { ($_ => 1) } @$orig_groups;
 $is_in_groups = 1;
-foreach my $gid (@new_groups) {
+foreach my $gid (@$new_groups) {
 	$is_in_groups = 0 unless $gid == $response->{gid} or exists $check_groups{$gid};
 }
 ok $is_in_groups, "All secondary groups are assigned to user";

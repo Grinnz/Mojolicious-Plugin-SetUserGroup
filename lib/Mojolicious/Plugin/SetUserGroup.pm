@@ -3,7 +3,8 @@ package Mojolicious::Plugin::SetUserGroup;
 use List::Util 'any';
 use Mojo::Base 'Mojolicious::Plugin';
 use Mojo::IOLoop;
-use POSIX;
+use POSIX qw(setuid setgid);
+use Unix::Groups 'setgroups';
 
 our $VERSION = '0.001';
 
@@ -41,11 +42,11 @@ sub _setusergroup {
 		push @gids, $id if any { $_ eq $user } split ' ', $members;
 	}
 	
-	$( = $gid;
-	_error($app, qq{Can't switch to real group "$group": $!}) if $!;
-	$) = join ' ', $gid, @gids;
-	_error($app, qq{Can't switch to effective GIDs "$gid @gids": $!}) if $!;
-	POSIX::setuid($uid);
+	setgid($gid);
+	_error($app, qq{Can't switch to group "$group": $!}) if $!;
+	setgroups(@gids);
+	_error($app, qq{Can't set supplemental GIDs "@gids": $!}) if $!;
+	setuid($uid);
 	_error($app, qq{Can't switch to user "$user": $!}) if $!;
 	
 	return 1;
