@@ -4,4 +4,3 @@ requires 'Mojolicious'	=> '6.0';
 requires 'POSIX';
 requires 'Unix::Groups';
 test_requires 'Test::More' => '0.88';
-test_requires 'Test::SharedFork';

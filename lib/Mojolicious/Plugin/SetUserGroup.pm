@@ -1,7 +1,7 @@
 package Mojolicious::Plugin::SetUserGroup;
+use Mojo::Base 'Mojolicious::Plugin';
 
 use List::Util 'any';
-use Mojo::Base 'Mojolicious::Plugin';
 use Mojo::IOLoop;
 use POSIX qw(setuid setgid);
 use Unix::Groups 'setgroups';
