@@ -8,9 +8,11 @@ use POSIX qw(getuid getgid);
 use Unix::Groups 'getgroups';
 
 plan skip_all => 'TEST_RUN_SUDO=1' unless $ENV{TEST_RUN_SUDO};
-if ($> != 0) {
-	my $gid = getgrnam $ENV{USER};
-	$ENV{TEST_ORIGINAL_USER} = encode_json {user => $ENV{USER}, uid => getuid(), gid => $gid, groups => [getgroups()]};
+if ((my $uid = getuid()) != 0) {
+	my $user = getpwuid $uid;
+	my $gid = getgrnam $user;
+	my $groups = [getgroups()];
+	$ENV{TEST_ORIGINAL_USER} = encode_json {user => $user, uid => $uid, gid => $gid, groups => $groups};
 	exec 'sudo', '-nE', $^X, '-I', $INC[0], $0, @ARGV;
 }
 

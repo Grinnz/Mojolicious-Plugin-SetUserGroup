@@ -4,6 +4,7 @@ use Test::More;
 use Mojo::IOLoop;
 use Mojo::Log;
 use Mojo::Server::Daemon;
+use POSIX 'getuid';
 
 open my $log_handle, '>', \my $log_buffer;
 open STDERR, '>/dev/null';
@@ -14,12 +15,12 @@ until (!defined getpwnam $invalid and !defined getgrnam $invalid) {
 	$invalid = 'invalid'.$i++;
 }
 
-my $user = getpwuid $<;
+my $user = getpwuid getuid();
 
 try_server($invalid, $invalid, qr/User "$invalid" does not exist/);
 try_server($user, $invalid, qr/Group "$invalid" does not exist/);
 
-unless ($< == 0) { # Root user will not fail
+unless (getuid() == 0) { # Root user will not fail
 	try_server($user, $user, qr/Can't (switch to (user|group)|set supplemental GIDs)/);
 }
 
