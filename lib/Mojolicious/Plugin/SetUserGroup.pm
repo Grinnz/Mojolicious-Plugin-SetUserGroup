@@ -6,7 +6,7 @@ use Mojo::IOLoop;
 use POSIX qw(setuid setgid);
 use Unix::Groups 'setgroups';
 
-our $VERSION = '0.001';
+our $VERSION = '0.002';
 
 sub register {
 	my ($self, $app, $conf) = @_;
