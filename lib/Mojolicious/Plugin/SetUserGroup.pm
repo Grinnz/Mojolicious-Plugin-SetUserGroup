@@ -7,7 +7,7 @@ use POSIX qw(setuid setgid);
 use Unix::Groups 'setgroups';
 use Carp qw/ croak /;
 
-our $VERSION = '0.002';
+our $VERSION = '0.003';
 
 sub register {
 	my ($self, $app, $conf) = @_;
