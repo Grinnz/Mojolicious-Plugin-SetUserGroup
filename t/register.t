@@ -1,10 +1,11 @@
-#!perl
-
 use strict;
 use warnings;
 
 use Mojolicious::Lite;
-use Test::More tests => 2;
+use Test::More;
+
+open my $log_handle, '>', \my $log_buffer;
+app->log->handle($log_handle);
 
 eval {
 	plugin 'SetUserGroup' => {
@@ -18,10 +19,17 @@ like(
 	qr/User "bad user name !!!!!" does not exist/,
 	'plugin croaks on bad user at register'
 );
+like(
+	$log_buffer,
+	qr/User "bad user name !!!!!" does not exist/,
+	'plugin logs error on bad user at register'
+);
+
+$log_buffer = '';
 
 eval {
 	plugin 'SetUserGroup' => {
-		user  => (getpwuid($<))[0],
+		user  => scalar getpwuid $<,
 		group => 'bad group name !!!!!',
 	};
 };
@@ -32,3 +40,10 @@ like(
 	qr/Group "bad group name !!!!!" does not exist/,
 	'plugin croaks on bad user at register'
 );
+like(
+	$log_buffer,
+	qr/Group "bad group name !!!!!" does not exist/,
+	'plugin logs error on bad user at register'
+);
+
+done_testing;

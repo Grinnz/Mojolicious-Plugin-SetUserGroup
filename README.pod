@@ -57,6 +57,16 @@ logged and the process will be stopped.
 
 Dan Book, C<dbook@cpan.org>
 
+=head1 CONTRIBUTORS
+
+=over
+
+=item Jan Henning Thorsen (jhthorsen)
+
+=item Lee Johnson (leejo)
+
+=back
+
 =head1 COPYRIGHT AND LICENSE
 
 Copyright 2015, Dan Book.

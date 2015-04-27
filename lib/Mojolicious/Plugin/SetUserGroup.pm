@@ -34,7 +34,7 @@ sub register {
 sub _error {
 	my ($app, $error) = @_;
 	chomp $error;
-	$app->log->error($error);
+	$app->log->fatal($error);
 	Mojo::IOLoop->stop;
 }
 
@@ -124,6 +124,16 @@ logged and the process will be stopped.
 =head1 AUTHOR
 
 Dan Book, C<dbook@cpan.org>
+
+=head1 CONTRIBUTORS
+
+=over
+
+=item Jan Henning Thorsen (jhthorsen)
+
+=item Lee Johnson (leejo)
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 

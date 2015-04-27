@@ -6,23 +6,14 @@ use Mojo::Log;
 use Mojo::Server::Daemon;
 use POSIX 'geteuid';
 
+plan skip_all => 'Non-root test' if geteuid() == 0;
+
 open my $log_handle, '>', \my $log_buffer;
 open my $null, '>', '/dev/null';
 
-my $i = 0;
-my $invalid = 'invalid';
-until (!defined getpwnam $invalid and !defined getgrnam $invalid) {
-	$invalid = 'invalid'.$i++;
-}
-
 my $user = getpwuid geteuid();
 
-try_server($invalid, $invalid, qr/User "$invalid" does not exist/);
-try_server($user, $invalid, qr/Group "$invalid" does not exist/);
-
-unless (geteuid() == 0) { # Root user will not fail
-	try_server($user, $user, qr/Can't (switch to (user|group)|set supplemental GIDs)/);
-}
+try_server($user, $user, qr/Can't (switch to (user|group)|set supplemental GIDs)/);
 
 sub try_server {
 	my ($user, $group, $re) = @_;
