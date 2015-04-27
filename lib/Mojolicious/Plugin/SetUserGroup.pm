@@ -29,11 +29,11 @@ sub _setusergroup {
 	my ($app, $user, $group) = @_;
 	
 	# User
-	_error($app, qq{User "$user" does not exist})
+	return _error($app, qq{User "$user" does not exist})
 		unless defined(my $uid = getpwnam $user);
 	
 	# Group
-	_error($app, qq{Group "$group" does not exist})
+	return _error($app, qq{Group "$group" does not exist})
 		unless defined(my $gid = getgrnam $group);
 	
 	# Secondary groups
