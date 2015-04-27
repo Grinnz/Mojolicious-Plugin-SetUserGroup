@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.002     2015-04-27 10:29:29 EDT
   - Die on plugin register with nonexistent user or group (leejo)
 
 0.001     2015-04-26 20:23:40 EDT
