@@ -74,7 +74,7 @@ credentials
   
   # Root only
   plugin SetUserGroup => {user => $user, group => $group}
-    if $> == 0;
+    if $< == 0 or $> == 0;
 
 =head1 DESCRIPTION
 
