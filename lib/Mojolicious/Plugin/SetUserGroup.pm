@@ -87,11 +87,11 @@ L<hypnotoad>.
 This allows an application to be started as root so it can bind to privileged
 ports such as port 80 or 443, but run worker processes as unprivileged users.
 However, if the application is not started as root, it will most likely fail to
-change privileges. So, you should only set the user/group when the application
+change credentials. So, you should only set the user/group when the application
 is started as root.
 
 This module requires L<Unix::Groups> and thus will only work on Unix-like
-systems like Linux, OS X and BSD.
+systems like Linux, OS X, and BSD.
 
 =head1 METHODS
 
@@ -102,11 +102,11 @@ L<Mojolicious::Plugin> and implements the following new ones.
 
   $plugin->register(Mojolicious->new, {user => $user, group => $group});
 
-Install callback to change process privileges on the next L<Mojo::IOLoop> tick.
-If option C<user> is undefined, no privilege change will occur. If option
-C<group> is undefined but C<user> is defined, the group will be set to a group
-matching the user name. If privilege changes fail, an error will be logged and
-the process will be stopped.
+Install callback to change process credentials on the next L<Mojo::IOLoop>
+tick. If option C<user> is undefined, no credential change will occur. If
+option C<group> is undefined but C<user> is defined, the group will be set to a
+group matching the user name. If credential changes fail, an error will be
+logged and the process will be stopped.
 
 =head1 AUTHOR
 
