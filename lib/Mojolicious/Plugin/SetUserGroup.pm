@@ -5,6 +5,7 @@ use List::Util 'any';
 use Mojo::IOLoop;
 use POSIX qw(setuid setgid);
 use Unix::Groups 'setgroups';
+use Carp qw/ croak /;
 
 our $VERSION = '0.002';
 
@@ -12,9 +13,21 @@ sub register {
 	my ($self, $app, $conf) = @_;
 	my $user = $conf->{user};
 	my $group = $conf->{group} // $user;
-	
+
 	return $self unless defined $user;
 	
+	unless (defined(my $uid = getpwnam $user)) {
+		my $error = qq{User "$user" does not exist};
+		$app->log->fatal($error);
+		croak($error);
+	}
+
+	unless (defined(my $gid = getgrnam $group)) {
+		my $error = qq{Group "$group" does not exist};
+		$app->log->fatal($error);
+		croak($error);
+	}
+
 	Mojo::IOLoop->next_tick(sub { _setusergroup($app, $user, $group) });
 }
 
