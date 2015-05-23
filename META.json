@@ -1,0 +1,62 @@
+{
+   "abstract" : "Mojolicious plugin to set unprivileged credentials",
+   "author" : [
+      "Dan Book <dbook@cpan.org>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Dist::Zilla version 5.036, CPAN::Meta::Converter version 2.150001",
+   "license" : [
+      "artistic_2"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : 2
+   },
+   "name" : "Mojolicious-Plugin-SetUserGroup",
+   "prereqs" : {
+      "configure" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "0"
+         }
+      },
+      "develop" : {
+         "requires" : {
+            "Dist::Zilla::PluginBundle::Author::DBOOK" : "0.003"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "List::Util" : "1.33",
+            "Mojolicious" : "6.0",
+            "POSIX" : "0",
+            "Unix::Groups" : "0",
+            "perl" : "5.010001"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Test::More" : "0.88"
+         }
+      }
+   },
+   "provides" : {
+      "Mojolicious::Plugin::SetUserGroup" : {
+         "file" : "lib/Mojolicious/Plugin/SetUserGroup.pm",
+         "version" : "0.003"
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/Grinnz/Mojolicious-Plugin-SetUserGroup/issues"
+      },
+      "homepage" : "https://github.com/Grinnz/Mojolicious-Plugin-SetUserGroup",
+      "repository" : {
+         "type" : "git",
+         "url" : "https://github.com/Grinnz/Mojolicious-Plugin-SetUserGroup.git",
+         "web" : "https://github.com/Grinnz/Mojolicious-Plugin-SetUserGroup"
+      }
+   },
+   "version" : "0.003"
+}
+
