@@ -5,7 +5,7 @@ use List::Util 'any';
 use Mojo::IOLoop;
 use POSIX qw(setuid setgid);
 use Unix::Groups 'setgroups';
-use Carp qw/ croak /;
+use Carp 'croak';
 
 our $VERSION = '0.003';
 
@@ -13,21 +13,15 @@ sub register {
 	my ($self, $app, $conf) = @_;
 	my $user = $conf->{user};
 	my $group = $conf->{group} // $user;
-
+	
 	return $self unless defined $user;
 	
-	unless (defined(my $uid = getpwnam $user)) {
-		my $error = qq{User "$user" does not exist};
-		$app->log->fatal($error);
-		croak($error);
-	}
-
-	unless (defined(my $gid = getgrnam $group)) {
-		my $error = qq{Group "$group" does not exist};
-		$app->log->fatal($error);
-		croak($error);
-	}
-
+	# Make sure desired user and group exist
+	croak _error($app, qq{User "$user" does not exist})
+		unless defined(scalar getpwnam $user);
+	croak _error($app, qq{Group "$group" does not exist})
+		unless defined(scalar getgrnam $group);
+	
 	Mojo::IOLoop->next_tick(sub { _setusergroup($app, $user, $group) });
 }
 
@@ -35,35 +29,33 @@ sub _error {
 	my ($app, $error) = @_;
 	chomp $error;
 	$app->log->fatal($error);
-	Mojo::IOLoop->stop;
+	Mojo::IOLoop->stop if Mojo::IOLoop->is_running;
+	return $error;
 }
 
 sub _setusergroup {
 	my ($app, $user, $group) = @_;
 	
-	# User
-	return _error($app, qq{User "$user" does not exist})
-		unless defined(my $uid = getpwnam $user);
-	
-	# Group
-	return _error($app, qq{Group "$group" does not exist})
-		unless defined(my $gid = getgrnam $group);
+	# User and group IDs
+	my $uid = getpwnam($user) // return _error($app, qq{User "$user" does not exist});
+	my $gid = getgrnam($group) // return _error($app, qq{Group "$group" does not exist});
 	
 	# Secondary groups
 	my @gids = ($gid);
-	while (my (undef, undef, $id, $members) = getgrent()) {
-		next if $id == $gid;
-		push @gids, $id if any { $_ eq $user } split ' ', $members;
+	my @groups = ($group);
+	while (my ($name, undef, $id, $members) = getgrent()) {
+		if ($id != $gid and any { $_ eq $user } split ' ', $members) {
+			push @gids, $id;
+			push @groups, $name;
+		}
 	}
 	
 	setgid($gid);
 	return _error($app, qq{Can't switch to group "$group": $!}) if $!;
 	setgroups(@gids);
-	return _error($app, qq{Can't set supplemental GIDs "@gids": $!}) if $!;
+	return _error($app, qq{Can't set supplemental groups "@groups": $!}) if $!;
 	setuid($uid);
 	return _error($app, qq{Can't switch to user "$user": $!}) if $!;
-	
-	return 1;
 }
 
 1;

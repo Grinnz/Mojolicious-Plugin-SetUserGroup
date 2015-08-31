@@ -13,7 +13,7 @@ open my $null, '>', '/dev/null';
 
 my $user = getpwuid geteuid();
 
-try_server($user, $user, qr/Can't (switch to (user|group)|set supplemental GIDs)/);
+try_server($user, $user, qr/Can't (switch to (user|group)|set supplemental groups)/);
 
 sub try_server {
 	my ($user, $group, $re) = @_;
