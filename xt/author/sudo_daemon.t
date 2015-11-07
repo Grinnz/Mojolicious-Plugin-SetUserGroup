@@ -15,7 +15,10 @@ if ((my $uid = geteuid()) != 0) {
 	my $gid = getegid();
 	my $groups = [getgroups()];
 	$ENV{TEST_ORIGINAL_USER} = j {user => $user, uid => $uid, gid => $gid, groups => $groups};
-	exec 'sudo', '-nE', $^X, '-I', $INC[0], $0, @ARGV;
+	my @args = ('sudo', '-nE', $^X);
+	push @args, '-I', $_ for @INC;
+	push @args, $0, @ARGV;
+	exec @args;
 }
 
 my $original = j($ENV{TEST_ORIGINAL_USER} || '{}');
