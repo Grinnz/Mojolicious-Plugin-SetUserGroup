@@ -29,7 +29,7 @@ $log_buffer = '';
 
 eval {
 	plugin 'SetUserGroup' => {
-		user  => scalar getpwuid $<,
+		user  => scalar getpwuid $>,
 		group => 'bad group name !!!!!',
 	};
 };
