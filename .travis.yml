@@ -6,3 +6,8 @@ perl:
   - "5.14"
   - "5.12"
   - "5.10"
+env:
+  - TEST_RUN_SUDO=0
+  - TEST_RUN_SUDO=1
+sudo: required
+before_script: cp xt/author/*.t t/
