@@ -1,5 +1,6 @@
 {{$NEXT}}
   - Switch installer to Module::Build::Tiny
+  - Fix test failure when no group exists with the same name as the current user
 
 0.002     2015-04-27 10:29:29 EDT
   - Die on plugin register with nonexistent user or group (leejo)

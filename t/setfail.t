@@ -4,7 +4,7 @@ use Test::More;
 use Mojo::IOLoop;
 use Mojo::Log;
 use Mojo::Server::Daemon;
-use POSIX 'geteuid';
+use POSIX 'geteuid', 'getegid';
 
 plan skip_all => 'Non-root test' if geteuid() == 0;
 
@@ -12,8 +12,9 @@ open my $log_handle, '>', \my $log_buffer;
 open my $null, '>', '/dev/null';
 
 my $user = getpwuid geteuid();
+my $group = getgrgid getegid();
 
-try_server($user, $user, qr/Can't (switch to (user|group)|set supplemental groups)/);
+try_server($user, $group, qr/Can't (switch to (user|group)|set supplemental groups)/);
 
 sub try_server {
 	my ($user, $group, $re) = @_;
