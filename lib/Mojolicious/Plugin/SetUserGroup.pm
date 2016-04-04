@@ -18,13 +18,15 @@ sub register {
 	
 	# Make sure desired user and group exist
 	$! = 0;
-	my $uid = getpwnam($user);
-	croak _error($app, qq{Failed to retrieve user "$user": $!}) if $!;
-	croak _error($app, qq{User "$user" does not exist}) unless defined $uid;
+	unless (defined(getpwnam($user))) {
+		croak _error($app, qq{Failed to retrieve user "$user": $!}) if $!;
+		croak _error($app, qq{User "$user" does not exist});
+	}
 	$! = 0;
-	my $gid = getgrnam($group);
-	croak _error($app, qq{Failed to retrieve group "$group": $!}) if $!;
-	croak _error($app, qq{Group "$group" does not exist}) unless defined $gid;
+	unless (defined(getgrnam($group))) {
+		croak _error($app, qq{Failed to retrieve group "$group": $!}) if $!;
+		croak _error($app, qq{Group "$group" does not exist});
+	}
 	
 	Mojo::IOLoop->next_tick(sub { _setusergroup($app, $user, $group) });
 }
@@ -41,14 +43,17 @@ sub _setusergroup {
 	my ($app, $user, $group) = @_;
 	
 	# User and group IDs
+	my ($uid, $gid);
 	$! = 0;
-	my $uid = getpwnam($user);
-	return _error($app, qq{Failed to retrieve user "$user": $!}) if $!;
-	return _error($app, qq{User "$user" does not exist}) unless defined $uid;
+	unless (defined($uid = getpwnam($user))) {
+		return _error($app, qq{Failed to retrieve user "$user": $!}) if $!;
+		return _error($app, qq{User "$user" does not exist});
+	}
 	$! = 0;
-	my $gid = getgrnam($group);
-	return _error($app, qq{Failed to retrieve group "$group": $!}) if $!;
-	return _error($app, qq{Group "$group" does not exist}) unless defined $gid;
+	unless (defined($gid = getgrnam($group))) {
+		return _error($app, qq{Failed to retrieve group "$group": $!}) if $!;
+		return _error($app, qq{Group "$group" does not exist});
+	}
 	
 	# Secondary groups
 	my @gids = ($gid);
@@ -63,9 +68,9 @@ sub _setusergroup {
 		$! = 0;
 	}
 	
-	if (setgid($gid) < 0) { return _error($app, qq{Can't switch to group "$group": $!}); }
+	unless (setgid($gid) == 0) { return _error($app, qq{Can't switch to group "$group": $!}); }
 	unless (setgroups(@gids)) { return _error($app, qq{Can't set supplemental groups "@groups": $!}); }
-	if (setuid($uid) < 0) { return _error($app, qq{Can't switch to user "$user": $!}); }
+	unless (setuid($uid) == 0) { return _error($app, qq{Can't switch to user "$user": $!}); }
 }
 
 1;
