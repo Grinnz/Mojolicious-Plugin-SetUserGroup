@@ -18,12 +18,12 @@ sub register {
 	
 	# Make sure desired user and group exist
 	$! = 0;
-	unless (defined(getpwnam($user))) {
+	unless (defined(getpwnam $user)) {
 		croak _error($app, qq{Failed to retrieve user "$user": $!}) if $!;
 		croak _error($app, qq{User "$user" does not exist});
 	}
 	$! = 0;
-	unless (defined(getgrnam($group))) {
+	unless (defined(getgrnam $group)) {
 		croak _error($app, qq{Failed to retrieve group "$group": $!}) if $!;
 		croak _error($app, qq{Group "$group" does not exist});
 	}
@@ -45,12 +45,12 @@ sub _setusergroup {
 	# User and group IDs
 	my ($uid, $gid);
 	$! = 0;
-	unless (defined($uid = getpwnam($user))) {
+	unless (defined($uid = getpwnam $user)) {
 		return _error($app, qq{Failed to retrieve user "$user": $!}) if $!;
 		return _error($app, qq{User "$user" does not exist});
 	}
 	$! = 0;
-	unless (defined($gid = getgrnam($group))) {
+	unless (defined($gid = getgrnam $group)) {
 		return _error($app, qq{Failed to retrieve group "$group": $!}) if $!;
 		return _error($app, qq{Group "$group" does not exist});
 	}
@@ -59,14 +59,14 @@ sub _setusergroup {
 	my @gids = ($gid);
 	my @groups = ($group);
 	$! = 0;
-	while (my ($name, undef, $id, $members) = getgrent()) {
-		return _error($app, qq{Failed to read groups: $!}) if $!;
+	while (my ($name, undef, $id, $members) = getgrent) {
 		if ($id != $gid and any { $_ eq $user } split ' ', $members) {
 			push @gids, $id;
 			push @groups, $name;
 		}
-		$! = 0;
-	}
+	} continue { $! = 0; }
+	# Empty list may indicate getgrent is done, or an error
+	return _error($app, qq{Failed to read groups: $!}) if $!;
 	
 	unless (setgid($gid) == 0) { return _error($app, qq{Can't switch to group "$group": $!}); }
 	unless (setgroups(@gids)) { return _error($app, qq{Can't set supplemental groups "@groups": $!}); }
