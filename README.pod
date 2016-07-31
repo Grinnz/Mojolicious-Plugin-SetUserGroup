@@ -48,10 +48,11 @@ L<Mojolicious::Plugin> and implements the following new ones.
   $plugin->register(Mojolicious->new, {user => $user, group => $group});
 
 Install callback to change process credentials on the next L<Mojo::IOLoop>
-tick. If option C<user> is undefined, no credential change will occur. If
-option C<group> is undefined but C<user> is defined, the group will be set to a
-group matching the user name. If credential changes fail, an error will be
-logged and the process will be stopped.
+tick. If option C<user> is undefined or the current effective user and group
+are already correct, no credential change will occur. If option C<group> is
+undefined but C<user> is defined, the group will be set to a group matching the
+user name. If credential changes fail, an error will be logged and the process
+will be stopped.
 
 =head1 AUTHOR
 

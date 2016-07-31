@@ -3,7 +3,7 @@ use Mojo::Base 'Mojolicious::Plugin';
 
 use List::Util 'any';
 use Mojo::IOLoop;
-use POSIX qw(setuid setgid);
+use POSIX qw(geteuid getegid setuid setgid);
 use Unix::Groups 'setgroups';
 use Carp 'croak';
 
@@ -54,6 +54,9 @@ sub _setusergroup {
 		return _error($app, qq{Failed to retrieve group "$group": $!}) if $!;
 		return _error($app, qq{Group "$group" does not exist});
 	}
+	
+	# Check if user and group are already correct
+	return undef if geteuid() == $uid and getegid() == $gid;
 	
 	# Secondary groups
 	my @gids = ($gid);
@@ -123,10 +126,11 @@ L<Mojolicious::Plugin> and implements the following new ones.
   $plugin->register(Mojolicious->new, {user => $user, group => $group});
 
 Install callback to change process credentials on the next L<Mojo::IOLoop>
-tick. If option C<user> is undefined, no credential change will occur. If
-option C<group> is undefined but C<user> is defined, the group will be set to a
-group matching the user name. If credential changes fail, an error will be
-logged and the process will be stopped.
+tick. If option C<user> is undefined or the current effective user and group
+are already correct, no credential change will occur. If option C<group> is
+undefined but C<user> is defined, the group will be set to a group matching the
+user name. If credential changes fail, an error will be logged and the process
+will be stopped.
 
 =head1 AUTHOR
 

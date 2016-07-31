@@ -1,4 +1,5 @@
 {{$NEXT}}
+  - Don't attempt to set user and group if they are already correct
 
 0.004     2016-04-04 21:36:54 EDT
   - Fix and improve syscall error handling
