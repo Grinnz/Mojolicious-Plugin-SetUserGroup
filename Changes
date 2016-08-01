@@ -1,5 +1,6 @@
 {{$NEXT}}
   - Further fixes to error checking for setting user and group
+  - Fix to terminate prefork server properly on failure to change credentials in recent Mojolicious
   - Don't attempt to set user and group if they are both already correct
   - Add warning about morbo compatibility to docs
 
