@@ -27,8 +27,7 @@ This plugin is intended to replace the C<setuidgid> functionality of
 L<Mojo::Server>. It should be loaded in application startup and it will change
 the user and group credentials of the process when L<Mojo::IOLoop> is started,
 which occurs in each worker process of a L<Mojo::Server::Prefork> daemon like
-L<hypnotoad>. In single-process daemons like L<Mojo::Server::Daemon> or the
-L<morbo> server, the credential change will not occur.
+L<hypnotoad>.
 
 This allows an application to be started as root so it can bind to privileged
 ports such as port 80 or 443, but run worker processes as unprivileged users.
@@ -38,6 +37,12 @@ is started as root.
 
 This module requires L<Unix::Groups> and thus will only work on Unix-like
 systems like Linux, OS X, and BSD.
+
+The L<morbo> development server is currently incompatible with this plugin as
+the lowered credentials causes the application worker to shut down. Make sure
+credential changes do not occur when running your application under morbo,
+either by not registering the plugin under that condition, or starting morbo
+under the target user and group so no change occurs.
 
 =head1 METHODS
 

@@ -22,14 +22,8 @@ my $daemon = Mojo::Server::Daemon->new(listen => ['http://127.0.0.1'], silent =>
 $daemon->app->log->path($templog->filename);
 $daemon->app->plugin(SetUserGroup => {user => $user, group => $group});
 
-defined(my $pid = fork) or die "Fork failed: $!";
-
-unless ($pid) {
-	Mojo::IOLoop->timer(0.5 => sub { $daemon->app->log->error("Test server has started"); Mojo::IOLoop->stop });
-	{ open my $null, '>', '/dev/null'; local *STDERR = $null; $daemon->run; }
-	exit 0;
-}
-waitpid $pid, 0;
+Mojo::IOLoop->timer(0.5 => sub { $daemon->app->log->error("Test server has started"); Mojo::IOLoop->stop });
+{ open my $null, '>', '/dev/null'; local *STDERR = $null; $daemon->run; }
 
 my $log = slurp $templog->filename;
 unlike $log, qr/Test server has started/, 'Server failed to start';

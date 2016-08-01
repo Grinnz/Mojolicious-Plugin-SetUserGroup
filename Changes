@@ -1,8 +1,6 @@
 {{$NEXT}}
   - Don't attempt to set user and group if they are already correct
-  - Don't attempt to change credentials for single process daemons
-    (Please make sure you are not relying on this plugin to change credentials
-    for an app started with the "daemon" command or via morbo)
+  - Add warning about morbo compatibility to docs
 
 0.004     2016-04-04 21:36:54 EDT
   - Fix and improve syscall error handling
