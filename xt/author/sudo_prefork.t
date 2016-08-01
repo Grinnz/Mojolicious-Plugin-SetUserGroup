@@ -26,18 +26,26 @@ plan skip_all => "user is missing in TEST_ORIGINAL_USER=$ENV{TEST_ORIGINAL_USER}
 	unless my $user = delete $original->{user};
 
 my $port = Mojo::IOLoop::Server->generate_port;
-my $daemon = Mojo::Server::Prefork->new(listen => ["http://127.0.0.1:$port"],
-	silent => 1, workers => 2, accepts => 1, multi_accept => 1);
-$daemon->app->plugin(SetUserGroup => {user => $user, group => $user});
-$daemon->start;
-$daemon->app->routes->children([]);
-$daemon->app->routes->get('/' => sub {
-	shift->render(json => {
-		uid => geteuid(),
-		gid => getegid(),
-		groups => [getgroups()],
+
+defined(my $pid = fork) or die "Fork failed: $!";
+
+unless ($pid) {
+	my $daemon = Mojo::Server::Prefork->new(listen => ["http://127.0.0.1:$port?single_accept=1"],
+		silent => 1, workers => 2, accepts => 10, multi_accept => 1);
+	$daemon->app->plugin(SetUserGroup => {user => $user, group => $user});
+	#$daemon->start;
+	$daemon->app->routes->children([]);
+	$daemon->app->routes->get('/' => sub {
+		shift->render(json => {
+			uid => geteuid(),
+			gid => getegid(),
+			groups => [getgroups()],
+		});
 	});
-});
+	$daemon->run;
+	exit 0;
+}
+
 my $ua = Mojo::UserAgent->new;
 my @responses;
 Mojo::IOLoop->delay(sub {
@@ -54,6 +62,9 @@ Mojo::IOLoop->delay(sub {
 my $failed;
 Mojo::IOLoop->timer(1 => sub { $failed = 1; Mojo::IOLoop->stop });
 Mojo::IOLoop->start;
+kill 'TERM', $pid or die "Failed to terminate prefork daemon: $!";
+waitpid $pid, 0;
+
 ok !$failed, 'Loop stopped successfully';
 my $orig_groups = delete $original->{groups};
 

@@ -28,7 +28,8 @@ sub register {
 		croak _error($app, qq{Group "$group" does not exist});
 	}
 	
-	Mojo::IOLoop->next_tick(sub { _setusergroup($app, $user, $group) });
+	my $pid = $$;
+	Mojo::IOLoop->next_tick(sub { _setusergroup($app, $user, $group) unless $pid == $$ });
 }
 
 sub _error {
@@ -46,17 +47,17 @@ sub _setusergroup {
 	my ($uid, $gid);
 	$! = 0;
 	unless (defined($uid = getpwnam $user)) {
-		return _error($app, qq{Failed to retrieve user "$user": $!}) if $!;
-		return _error($app, qq{User "$user" does not exist});
+		die _error($app, qq{Failed to retrieve user "$user": $!}) if $!;
+		die _error($app, qq{User "$user" does not exist});
 	}
 	$! = 0;
 	unless (defined($gid = getgrnam $group)) {
-		return _error($app, qq{Failed to retrieve group "$group": $!}) if $!;
-		return _error($app, qq{Group "$group" does not exist});
+		die _error($app, qq{Failed to retrieve group "$group": $!}) if $!;
+		die _error($app, qq{Group "$group" does not exist});
 	}
 	
 	# Check if user and group are already correct
-	return undef if geteuid() == $uid and getegid() == $gid;
+	return if geteuid() == $uid and getegid() == $gid;
 	
 	# Secondary groups
 	my @gids = ($gid);
@@ -69,11 +70,13 @@ sub _setusergroup {
 		}
 	} continue { $! = 0; }
 	# Empty list may indicate getgrent is done, or an error
-	return _error($app, qq{Failed to read groups: $!}) if $!;
+	die _error($app, qq{Failed to read groups: $!}) if $!;
 	
-	unless (setgid($gid) == 0) { return _error($app, qq{Can't switch to group "$group": $!}); }
-	unless (setgroups(@gids)) { return _error($app, qq{Can't set supplemental groups "@groups": $!}); }
-	unless (setuid($uid) == 0) { return _error($app, qq{Can't switch to user "$user": $!}); }
+	my $rc = setgid($gid);
+	unless (defined $rc and $rc == 0) { die _error($app, qq{Can't switch to group "$group": $!}); }
+	unless (setgroups(@gids)) { die _error($app, qq{Can't set supplemental groups "@groups": $!}); }
+	$rc = setuid($uid);
+	unless (defined $rc and $rc == 0) { die _error($app, qq{Can't switch to user "$user": $!}); }
 }
 
 1;
@@ -105,7 +108,8 @@ This plugin is intended to replace the C<setuidgid> functionality of
 L<Mojo::Server>. It should be loaded in application startup and it will change
 the user and group credentials of the process when L<Mojo::IOLoop> is started,
 which occurs in each worker process of a L<Mojo::Server::Prefork> daemon like
-L<hypnotoad>.
+L<hypnotoad>. In single-process daemons like L<Mojo::Server::Daemon> or the
+L<morbo> server, the credential change will not occur.
 
 This allows an application to be started as root so it can bind to privileged
 ports such as port 80 or 443, but run worker processes as unprivileged users.
