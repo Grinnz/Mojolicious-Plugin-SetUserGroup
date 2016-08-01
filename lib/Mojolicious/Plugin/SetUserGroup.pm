@@ -7,7 +7,7 @@ use POSIX qw(geteuid getegid setuid setgid);
 use Unix::Groups 'setgroups';
 use Carp 'croak';
 
-our $VERSION = '0.005';
+our $VERSION = '0.006';
 
 sub register {
 	my ($self, $app, $conf) = @_;
