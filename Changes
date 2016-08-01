@@ -1,6 +1,8 @@
 {{$NEXT}}
-  - Further fixes to error checking for setting user and group
-  - Fix to terminate prefork server properly on failure to change credentials in recent Mojolicious
+
+0.005     2016-08-01 02:42:04 EDT
+  - Further fixes to error handling for credential change failure
+  - Fix to terminate prefork server properly on credential change failure in recent Mojolicious
   - Don't attempt to set user and group if they are both already correct
   - Add warning about morbo compatibility to docs
 
