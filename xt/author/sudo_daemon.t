@@ -13,8 +13,9 @@ plan skip_all => 'TEST_RUN_SUDO=1' unless $ENV{TEST_RUN_SUDO};
 if ((my $uid = geteuid()) != 0) {
 	my $user = getpwuid $uid;
 	my $gid = getegid();
+	my $group = getgrgid $gid;
 	my $groups = [getgroups()];
-	$ENV{TEST_ORIGINAL_USER} = j {user => $user, uid => $uid, gid => $gid, groups => $groups};
+	$ENV{TEST_ORIGINAL_USER} = j {user => $user, group => $group, uid => $uid, gid => $gid, groups => $groups};
 	my @args = ('sudo', '-nE', $^X);
 	push @args, '-I', $_ for @INC;
 	push @args, $0, @ARGV;
@@ -24,6 +25,7 @@ if ((my $uid = geteuid()) != 0) {
 my $original = j($ENV{TEST_ORIGINAL_USER} || '{}');
 plan skip_all => "user is missing in TEST_ORIGINAL_USER=$ENV{TEST_ORIGINAL_USER}"
 	unless my $user = delete $original->{user};
+my $group = delete $original->{group};
 
 my $port = Mojo::IOLoop::Server->generate_port;
 
@@ -31,7 +33,7 @@ defined(my $pid = fork) or die "Fork failed: $!";
 
 unless ($pid) {
 	my $daemon = Mojo::Server::Daemon->new(listen => ["http://127.0.0.1:$port"], silent => 1);
-	$daemon->app->plugin(SetUserGroup => {user => $user, group => $user});
+	$daemon->app->plugin(SetUserGroup => {user => $user, group => $group});
 	$daemon->app->routes->children([]);
 	$daemon->app->routes->get('/' => sub {
 		shift->render(json => {

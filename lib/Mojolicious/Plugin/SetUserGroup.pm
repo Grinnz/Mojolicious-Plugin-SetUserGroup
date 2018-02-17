@@ -59,9 +59,9 @@ sub _setusergroup {
 	
 	my $rc = setgid($gid);
 	unless (defined $rc and $rc == 0) { die _error($app, qq{Can't switch to group "$group": $!}); }
-	my ($error, $errored);
-	{ local $@; unless (eval { initgroups($user, $gid); 1 }) { $errored = 1; $error = "$!"; } }
-	if ($errored) { die _error($app, qq{Can't set supplemental groups for user "$user": $error}); }
+	my $error;
+	{ local $@; unless (eval { initgroups($user, $gid); 1 }) { $error = "$!" } }
+	if (defined $error) { die _error($app, qq{Can't set supplemental groups for user "$user": $error}); }
 	$rc = setuid($uid);
 	unless (defined $rc and $rc == 0) { die _error($app, qq{Can't switch to user "$user": $!}); }
 }

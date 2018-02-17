@@ -1,4 +1,6 @@
 {{$NEXT}}
+  - Use Unix::Groups::FFI to set supplemental groups with initgroups()
+  - When a group is not provided, use the primary group of the provided user instead of a group of the same name
 
 0.005     2016-08-01 02:42:04 EDT
   - Further fixes to error handling for credential change failure
