@@ -103,7 +103,7 @@ However, if the application is not started as root, it will most likely fail to
 change credentials. So, you should only set the user/group when the application
 is started as root.
 
-This module requires L<Unix::Groups> and thus will only work on Unix-like
+This module requires L<Unix::Groups::FFI> and thus will only work on Unix-like
 systems like Linux, OS X, and BSD.
 
 The L<morbo> development server is currently incompatible with this plugin as
@@ -151,4 +151,4 @@ the terms of the Artistic License version 2.0.
 
 =head1 SEE ALSO
 
-L<Mojolicious>, L<POSIX>, L<Unix::Groups>
+L<Mojolicious>, L<POSIX>, L<Unix::Groups::FFI>
