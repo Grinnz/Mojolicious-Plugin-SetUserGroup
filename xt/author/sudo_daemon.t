@@ -6,13 +6,13 @@ use Mojo::IOLoop::Server;
 use Mojo::JSON 'j';
 use Mojo::Server::Daemon;
 use Mojo::UserAgent;
-use POSIX qw(geteuid getegid);
+use POSIX qw(getuid getgid);
 use Unix::Groups::FFI 'getgroups';
 
 plan skip_all => 'TEST_RUN_SUDO=1' unless $ENV{TEST_RUN_SUDO};
-if ((my $uid = geteuid()) != 0) {
+if ((my $uid = getuid()) != 0) {
 	my $user = getpwuid $uid;
-	my $gid = getegid();
+	my $gid = getgid();
 	my $group = getgrgid $gid;
 	my $groups = [getgroups()];
 	$ENV{TEST_ORIGINAL_USER} = j {user => $user, group => $group, uid => $uid, gid => $gid, groups => $groups};
@@ -37,8 +37,8 @@ unless ($pid) {
 	$daemon->app->routes->children([]);
 	$daemon->app->routes->get('/' => sub {
 		shift->render(json => {
-			uid => geteuid(),
-			gid => getegid(),
+			uid => getuid(),
+			gid => getgid(),
 			groups => [getgroups()],
 		});
 	});

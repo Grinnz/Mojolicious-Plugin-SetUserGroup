@@ -1,5 +1,7 @@
 {{$NEXT}}
   - Use Unix::Groups::FFI to set supplemental groups with initgroups()
+  - Only skip changing credentials if real user and group are already correct, not effective user and group
+    (this usually does not matter, but an effective-only credential change can be undone)
 
 0.005     2016-08-01 02:42:04 EDT
   - Further fixes to error handling for credential change failure
