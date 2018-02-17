@@ -1,10 +1,9 @@
 package Mojolicious::Plugin::SetUserGroup;
 use Mojo::Base 'Mojolicious::Plugin';
 
-use List::Util 'any';
 use Mojo::IOLoop;
 use POSIX qw(geteuid getegid setuid setgid);
-use Unix::Groups 'setgroups';
+use Unix::Groups::FFI 'initgroups';
 use Carp 'croak';
 
 our $VERSION = '0.006';
@@ -58,22 +57,11 @@ sub _setusergroup {
 	# Check if user and group are already correct
 	return if geteuid() == $uid and getegid() == $gid;
 	
-	# Secondary groups
-	my @gids = ($gid);
-	my @groups = ($group);
-	$! = 0;
-	while (my ($name, undef, $id, $members) = getgrent) {
-		if ($id != $gid and any { $_ eq $user } split ' ', $members) {
-			push @gids, $id;
-			push @groups, $name;
-		}
-	} continue { $! = 0; }
-	# Empty list may indicate getgrent is done, or an error
-	die _error($app, qq{Failed to read groups: $!}) if $!;
-	
 	my $rc = setgid($gid);
 	unless (defined $rc and $rc == 0) { die _error($app, qq{Can't switch to group "$group": $!}); }
-	unless (setgroups(@gids)) { die _error($app, qq{Can't set supplemental groups "@groups": $!}); }
+	my ($error, $errored);
+	{ local $@; unless (eval { initgroups($user, $gid); 1 }) { $errored = 1; $error = "$!"; } }
+	if ($errored) { die _error($app, qq{Can't set supplemental groups for user "$user": $error}); }
 	$rc = setuid($uid);
 	unless (defined $rc and $rc == 0) { die _error($app, qq{Can't switch to user "$user": $!}); }
 }

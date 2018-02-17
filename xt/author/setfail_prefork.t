@@ -4,7 +4,7 @@ use Test::More;
 use Mojo::Asset::File;
 use Mojo::IOLoop;
 use Mojo::Server::Prefork;
-use POSIX 'geteuid', 'getegid', ':sys_wait_h';
+use POSIX qw(geteuid getegid :sys_wait_h);
 use Time::HiRes 'usleep';
 
 plan skip_all => 'Non-root test' if geteuid() == 0;

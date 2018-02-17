@@ -7,7 +7,7 @@ use Mojo::JSON 'j';
 use Mojo::Server::Prefork;
 use Mojo::UserAgent;
 use POSIX qw(geteuid getegid);
-use Unix::Groups 'getgroups';
+use Unix::Groups::FFI 'getgroups';
 
 plan skip_all => 'TEST_RUN_SUDO=1' unless $ENV{TEST_RUN_SUDO};
 if ((my $uid = geteuid()) != 0) {

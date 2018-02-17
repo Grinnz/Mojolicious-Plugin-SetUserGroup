@@ -2,7 +2,7 @@ use Test::More;
 use Mojolicious::Lite;
 use Mojo::IOLoop;
 use POSIX qw(geteuid getegid);
-use Unix::Groups 'getgroups';
+use Unix::Groups::FFI 'getgroups';
 
 my $init_uid = geteuid();
 my $init_gid = getegid();

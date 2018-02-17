@@ -4,7 +4,7 @@ use Test::More;
 use Mojo::Asset::File;
 use Mojo::IOLoop;
 use Mojo::Server::Daemon;
-use POSIX 'geteuid', 'getegid';
+use POSIX qw(geteuid getegid);
 
 plan skip_all => 'Non-root test' if geteuid() == 0;
 
