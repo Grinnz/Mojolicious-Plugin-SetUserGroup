@@ -2,7 +2,7 @@ package Mojolicious::Plugin::SetUserGroup;
 use Mojo::Base 'Mojolicious::Plugin';
 
 use Mojo::IOLoop;
-use POSIX qw(geteuid getegid setuid setgid);
+use POSIX qw(getuid getgid setuid setgid);
 use Unix::Groups::FFI 'initgroups';
 use Carp 'croak';
 
@@ -55,7 +55,7 @@ sub _setusergroup {
 	}
 	
 	# Check if user and group are already correct
-	return if geteuid() == $uid and getegid() == $gid;
+	return if getuid() == $uid and getgid() == $gid;
 	
 	my $rc = setgid($gid);
 	unless (defined $rc and $rc == 0) { die _error($app, qq{Can't switch to group "$group": $!}); }
@@ -101,7 +101,8 @@ This allows an application to be started as root so it can bind to privileged
 ports such as port 80 or 443, but run worker processes as unprivileged users.
 However, if the application is not started as root, it will most likely fail to
 change credentials. So, you should only set the user/group when the application
-is started as root.
+is started as root or a user with the C<CAP_SETUID> and C<CAP_SETGID>
+L<capabilities(7)>.
 
 This module requires L<Unix::Groups::FFI> and thus will only work on Unix-like
 systems like Linux, OS X, and BSD.
