@@ -104,8 +104,8 @@ change credentials. So, you should only set the user/group when the application
 is started as root or a user with the C<CAP_SETUID> and C<CAP_SETGID>
 L<capabilities(7)>.
 
-This module requires L<Unix::Groups::FFI> and thus will only work on Unix-like
-systems like Linux, OS X, and BSD.
+This plugin only works on systems with a concept of Unix users and groups, such
+as Linux, OS X, or BSD.
 
 The L<morbo> development server is currently incompatible with this plugin as
 the lowered credentials causes the application worker to shut down. Make sure
