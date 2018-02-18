@@ -6,11 +6,11 @@ use Mojo::IOLoop::Server;
 use Mojo::JSON 'j';
 use Mojo::Server::Prefork;
 use Mojo::UserAgent;
-use POSIX qw(getuid getgid);
+use POSIX qw(getuid getgid geteuid);
 use Unix::Groups::FFI 'getgroups';
 
 plan skip_all => 'TEST_RUN_SUDO=1' unless $ENV{TEST_RUN_SUDO};
-if ((my $uid = getuid()) != 0) {
+if ((my $uid = geteuid()) != 0) {
 	my $user = getpwuid $uid;
 	my $gid = getgid();
 	my $group = getgrgid $gid;

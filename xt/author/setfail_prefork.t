@@ -4,10 +4,10 @@ use Test::More;
 use Mojo::Asset::File;
 use Mojo::IOLoop;
 use Mojo::Server::Prefork;
-use POSIX qw(getuid getgid :sys_wait_h);
+use POSIX qw(getuid getgid geteuid :sys_wait_h);
 use Time::HiRes 'usleep';
 
-plan skip_all => 'Non-root test' if getuid() == 0;
+plan skip_all => 'Non-root test' if geteuid() == 0;
 
 my $uid = getuid();
 my $gid = getgid();

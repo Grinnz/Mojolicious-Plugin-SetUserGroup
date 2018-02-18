@@ -5,8 +5,6 @@ use Mojo::IOLoop;
 use Mojo::Server::Daemon;
 use POSIX qw(getuid getgid);
 
-plan skip_all => 'Non-root test' if getuid() == 0;
-
 my $uid = getuid();
 my $gid = getgid();
 my $user = getpwuid $uid;
