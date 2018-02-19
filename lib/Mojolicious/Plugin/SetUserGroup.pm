@@ -6,7 +6,7 @@ use POSIX qw(getuid getgid setuid setgid);
 use Unix::Groups::FFI 'initgroups';
 use Carp 'croak';
 
-our $VERSION = '0.006';
+our $VERSION = '1.000';
 
 sub register {
 	my ($self, $app, $conf) = @_;

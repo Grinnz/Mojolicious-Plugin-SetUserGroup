@@ -58,7 +58,7 @@
    "provides" : {
       "Mojolicious::Plugin::SetUserGroup" : {
          "file" : "lib/Mojolicious/Plugin/SetUserGroup.pm",
-         "version" : "0.006"
+         "version" : "1.000"
       }
    },
    "release_status" : "stable",
@@ -73,7 +73,7 @@
          "web" : "https://github.com/Grinnz/Mojolicious-Plugin-SetUserGroup"
       }
    },
-   "version" : "0.006",
+   "version" : "1.000",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.026001"
@@ -262,7 +262,7 @@
                   "branch" : null,
                   "changelog" : "Changes",
                   "signed" : 0,
-                  "tag" : "v0.006",
+                  "tag" : "v1.000",
                   "tag_format" : "v%v",
                   "tag_message" : "v%v"
                },

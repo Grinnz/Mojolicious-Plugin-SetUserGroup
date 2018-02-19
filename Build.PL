@@ -84,7 +84,7 @@ EOW
         "Dan Book <dbook\@cpan.org>"
       ],
       "dist_name" => "Mojolicious-Plugin-SetUserGroup",
-      "dist_version" => "0.006",
+      "dist_version" => "1.000",
       "license" => "artistic_2",
       "module_name" => "Mojolicious::Plugin::SetUserGroup",
       "recursive_test_files" => 1,
